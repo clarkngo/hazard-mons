@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to PokéHazard are documented here.
+All notable changes to Hazard Mons are documented here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ---
@@ -26,7 +26,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Two-way navigation: homepage `▶ Play Latest` → `docs/phase1/`; game title screen `☣ POKÉHAZARD.DEV` → homepage
 
 ### Infrastructure
-- `base` path set to `/poke-hazard/` on build, `/` in dev (no broken asset paths in either env)
+- `base` path set to `/hazard-mons/` on build, `/` in dev (no broken asset paths in either env)
 - GH Pages now auto-updates `docs/latest/` on every merge to `main`
 
 ---

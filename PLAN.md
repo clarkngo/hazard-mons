@@ -1,7 +1,7 @@
-# PokéHazard — Development Plan
+# Hazard Mons — Development Plan
 
 ## Deployment
-- Hosted on **GitHub Pages** at `https://clarkngo.github.io/poke-hazard/`
+- Hosted on **GitHub Pages** at `https://clarkngo.github.io/hazard-mons/`
 - Save data stored in **localStorage**
 - Save state can be **downloaded** (JSON) and **uploaded** to restore
 
@@ -10,14 +10,14 @@ Each completed phase is preserved as a playable build at its own URL:
 
 | Phase | URL | Status |
 |---|---|---|
-| Phase 1 | `/poke-hazard/phase1/` | 🔲 Not started |
-| Phase 2 | `/poke-hazard/phase2/` | 🔲 Not started |
-| Phase 3 | `/poke-hazard/phase3/` | 🔲 Not started |
-| Phase 4 | `/poke-hazard/phase4/` | 🔲 Not started |
-| Phase 5 | `/poke-hazard/phase5/` | 🔲 Not started |
-| Phase 6 | `/poke-hazard/phase6/` | 🔲 Not started |
-| Phase 7 | `/poke-hazard/phase7/` | 🔲 Not started |
-| Phase 8 | `/poke-hazard/phase8/` | 🔲 Not started |
+| Phase 1 | `/hazard-mons/phase1/` | 🔲 Not started |
+| Phase 2 | `/hazard-mons/phase2/` | 🔲 Not started |
+| Phase 3 | `/hazard-mons/phase3/` | 🔲 Not started |
+| Phase 4 | `/hazard-mons/phase4/` | 🔲 Not started |
+| Phase 5 | `/hazard-mons/phase5/` | 🔲 Not started |
+| Phase 6 | `/hazard-mons/phase6/` | 🔲 Not started |
+| Phase 7 | `/hazard-mons/phase7/` | 🔲 Not started |
+| Phase 8 | `/hazard-mons/phase8/` | 🔲 Not started |
 
 **How it works:** When a phase is complete, its build is copied into `docs/phaseN/` on the `main` branch. GitHub Pages serves the entire `docs/` folder, so every phase stays accessible at its own URL forever. The root `docs/index.html` acts as a **phase selector landing page**.
 
@@ -32,14 +32,14 @@ Each completed phase is preserved as a playable build at its own URL:
 - **Vite + TypeScript** — build tool, fast dev server, trivial GH Pages deploy
 - **Phaser 3** — game loop, scenes, sprites, tilemaps, input
 - **HTML/CSS overlays** — Phaser `UIScene` + DOM panels for inventory, Viral Dex, crafting menus
-- `vite.config.ts` base path: `/poke-hazard/` (root) or `/poke-hazard/phaseN/` per snapshot
+- `vite.config.ts` base path: `/hazard-mons/` (root) or `/hazard-mons/phaseN/` per snapshot
 
 ---
 
 ## Project Structure
 
 ```
-poke-hazard/
+hazard-mons/
 ├── docs/                        ← GitHub Pages root
 │   ├── index.html               ← Phase selector landing page
 │   ├── phase1/                  ← Frozen build snapshots
@@ -177,7 +177,7 @@ interface SaveState {
 ## Systems
 
 ### Save System
-- `localStorage.setItem('pokehazard-save', JSON.stringify(state))`
+- `localStorage.setItem('hazardmons-save', JSON.stringify(state))`
 - **Export:** `Blob` → `<a download="save.json">` trigger
 - **Import:** `<input type="file">` → `FileReader` → JSON parse → version check → restore
 
@@ -241,7 +241,7 @@ Exceeding the cap: max HP reduced, random debuffs. Forces focused builds.
 ### ✅ Phase 1 — Foundation
 - [x] Vite + TypeScript + Phaser 3 scaffold
 - [x] Save/Load system (localStorage + JSON export/import)
-- [x] GitHub Pages deploy config (`base: '/poke-hazard/'`)
+- [x] GitHub Pages deploy config (`base: '/hazard-mons/'`)
 - [x] Title screen + new game / load game flow
 - [x] `docs/` folder structure + phase selector landing page (`docs/index.html`)
 
