@@ -147,10 +147,10 @@ export class TitleScene extends Phaser.Scene {
     const homeUrl = import.meta.env.DEV ? '/' : '../'
 
     return `
-      <a href="${homeUrl}" class="title-home-link">☣ POKÉHAZARD.DEV</a>
-      <p class="title-eyebrow">// VIRAL INCIDENT REPORT — PROJECT P.H. //</p>
+      <a href="${homeUrl}" class="title-home-link">☣ HAZARDMONS.DEV</a>
+      <p class="title-eyebrow">// VIRAL INCIDENT REPORT — PROJECT H.M. //</p>
       <h1 class="title-main">
-        <span class="tp">POKÉ</span><span class="th">HAZARD</span>
+        <span class="tp">HAZARD</span><span class="th">MONS</span>
       </h1>
       <p class="title-version">v0.1.0 — PHASE 1: FOUNDATION</p>
 

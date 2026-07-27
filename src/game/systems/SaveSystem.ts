@@ -1,6 +1,6 @@
 import type { SaveState } from '../types/save'
 
-const SAVE_KEY = 'pokehazard-save'
+const SAVE_KEY = 'hazardmons-save'
 const CURRENT_VERSION = '0.1.0'
 
 export const SaveSystem = {
@@ -45,7 +45,7 @@ export const SaveSystem = {
     const url  = URL.createObjectURL(blob)
     const a    = Object.assign(document.createElement('a'), {
       href: url,
-      download: `pokehazard-save-${Date.now()}.json`,
+      download: `hazardmons-save-${Date.now()}.json`,
     })
     a.click()
     URL.revokeObjectURL(url)
