@@ -3,6 +3,7 @@ import { EVOLUTION_CHAINS, describeLink, getChainFor } from '../data/evolutions'
 import { WEAPONS } from '../data/weapons'
 import { ARMOR } from '../data/armor'
 import { ACCESSORIES } from '../data/accessories'
+import { spriteUrl } from '../data/sprites'
 import { formatTrigger } from '../types/catalog'
 import type { MonsterArchetype, MonsterDef, ViralStrain } from '../types/catalog'
 
@@ -132,15 +133,23 @@ export class ViralDexPanel {
         <div class="dex-list">
           ${list.length === 0 ? '<p class="dex-empty">NO MATCHING FILES</p>' : list.map(m => `
             <button type="button" class="dex-item${m.id === selected.id ? ' on' : ''}" data-mon="${m.id}">
-              <span class="dex-item-name">${m.name}</span>
-              <span class="dex-item-meta">${m.archetype} · ${m.viralStrain}</span>
+              <img class="dex-thumb" src="${spriteUrl('monsters', m.id)}" alt="" width="32" height="32">
+              <span class="dex-item-text">
+                <span class="dex-item-name">${m.name}</span>
+                <span class="dex-item-meta">${m.archetype} · ${m.viralStrain}</span>
+              </span>
             </button>
           `).join('')}
         </div>
         <article class="dex-detail">
           <p class="dex-file">FILE ${String(MONSTERS.indexOf(selected) + 1).padStart(2, '0')} / ${MONSTERS.length} · ARCHIVED</p>
-          <h3>${selected.name}</h3>
-          <p class="dex-desc">${selected.description}</p>
+          <div class="dex-portrait-row">
+            <img class="dex-portrait" src="${spriteUrl('monsters', selected.id)}" alt="${selected.name}" width="128" height="128">
+            <div>
+              <h3>${selected.name}</h3>
+              <p class="dex-desc">${selected.description}</p>
+            </div>
+          </div>
           <div class="dex-stats">
             ${stat('HP', selected.stats.hp)}
             ${stat('ATK', selected.stats.atk)}
@@ -166,6 +175,11 @@ export class ViralDexPanel {
         ${EVOLUTION_CHAINS.map(c => `
           <article class="dex-card">
             <p class="dex-card-label">${c.ids.length}-STAGE T-EVOLUTION</p>
+            <div class="dex-chain-sprites">
+              ${c.ids.map(id => `
+                <img class="dex-thumb lg" src="${spriteUrl('monsters', id)}" alt="" width="48" height="48">
+              `).join('<span class="dex-chain-arrow">→</span>')}
+            </div>
             <h3>${c.names.join(' → ')}</h3>
             <ul>${c.links.map(l => `<li>${describeLink(l)}</li>`).join('')}</ul>
           </article>
@@ -179,6 +193,7 @@ export class ViralDexPanel {
       <div class="dex-grid">
         ${WEAPONS.map(w => `
           <article class="dex-card">
+            <img class="dex-card-art" src="${spriteUrl('weapons', w.id)}" alt="${w.name}" width="96" height="96">
             <p class="dex-card-label">${w.baseType} · ${w.slots} POD SLOT${w.slots > 1 ? 'S' : ''}</p>
             <h3>${w.name}</h3>
             <p>${w.description}</p>
@@ -195,6 +210,7 @@ export class ViralDexPanel {
       <div class="dex-grid">
         ${ARMOR.map(a => `
           <article class="dex-card">
+            <img class="dex-card-art" src="${spriteUrl('armor', a.id)}" alt="${a.name}" width="96" height="96">
             <p class="dex-card-label">${a.slot.toUpperCase()} · ${a.archetype}</p>
             <h3>${a.name}</h3>
             <p>${a.description}</p>
@@ -212,6 +228,7 @@ export class ViralDexPanel {
       <div class="dex-grid">
         ${ACCESSORIES.map(a => `
           <article class="dex-card">
+            <img class="dex-card-art" src="${spriteUrl('accessories', a.id)}" alt="${a.name}" width="96" height="96">
             <p class="dex-card-label">ACCESSORY · LOAD +${a.viralLoad}</p>
             <h3>${a.name}</h3>
             <p>${a.description}</p>
