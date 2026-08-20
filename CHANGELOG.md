@@ -7,6 +7,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Added
+- **Viral Dex pixel art** — 46 procedural 32×32 sprites (26 monsters, 6 weapons, 8 armor, 6 accessories) with strain-colored palettes, wired into Dex list/detail/gear cards (`npm run sprites`)
+
 ---
 
 ## [0.5.0] — 2026-08-19 — Phase 2: Data Layer

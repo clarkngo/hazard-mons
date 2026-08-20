@@ -430,10 +430,39 @@
       background: transparent;
       border: none;
       border-bottom: 1px solid var(--border);
-      padding: 0.7rem 0.85rem;
+      padding: 0.55rem 0.75rem;
       cursor: pointer;
       color: var(--bright);
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
     }
+    .dex-thumb, .dex-portrait, .dex-card-art {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      flex-shrink: 0;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid var(--border);
+    }
+    .dex-thumb { width: 32px; height: 32px; }
+    .dex-thumb.lg { width: 48px; height: 48px; }
+    .dex-portrait {
+      width: 96px; height: 96px;
+      background: rgba(0,255,65,0.04);
+    }
+    .dex-card-art {
+      width: 72px; height: 72px;
+      margin-bottom: 0.55rem;
+      display: block;
+    }
+    .dex-portrait-row {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      margin-bottom: 0.85rem;
+    }
+    .dex-portrait-row .dex-desc { margin-bottom: 0; }
+    .dex-item-text { min-width: 0; }
     .dex-item-name {
       display: block;
       font-family: 'Orbitron', monospace;
@@ -466,9 +495,9 @@
     }
     .dex-detail h3 {
       font-family: 'Press Start 2P', monospace;
-      font-size: clamp(0.85rem, 2vw, 1.15rem);
+      font-size: clamp(0.75rem, 1.8vw, 1rem);
       color: var(--green);
-      margin-bottom: 0.7rem;
+      margin-bottom: 0.55rem;
     }
     .dex-desc {
       color: var(--text);
@@ -525,6 +554,18 @@
       padding: 1rem 1.05rem;
       background: rgba(0,255,65,0.02);
     }
+    .dex-chain-sprites {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin: 0.55rem 0 0.7rem;
+      flex-wrap: wrap;
+    }
+    .dex-chain-arrow {
+      font-family: 'Orbitron', monospace;
+      color: var(--dim);
+      font-size: 0.7rem;
+    }
     .dex-card-label {
       font-family: 'Orbitron', monospace;
       font-size: 0.48rem;
@@ -555,6 +596,7 @@
       .dex-split { grid-template-columns: 1fr; }
       .dex-list { max-height: 180px; }
       .dex-stats { grid-template-columns: repeat(3, 1fr); }
+      .dex-portrait-row { flex-direction: column; }
     }
 
     /* ── Scanlines ────────────────────────────────── */

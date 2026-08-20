@@ -7,7 +7,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "snapshot:phase1": "npm run build && rm -rf docs/phase1 && cp -r dist docs/phase1",
-    "snapshot:phase2": "npm run build && rm -rf docs/phase2 && cp -r dist docs/phase2"
+    "snapshot:phase2": "npm run build && rm -rf docs/phase2 && cp -r dist docs/phase2",
+    "sprites": "node scripts/generate-sprites.mjs"
   },
   "dependencies": {
     "phaser": "^3.80.1"
