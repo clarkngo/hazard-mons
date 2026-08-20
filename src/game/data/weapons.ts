@@ -1,0 +1,58 @@
+import type { WeaponDef } from '../types/catalog'
+
+export const WEAPONS: WeaponDef[] = [
+  {
+    id: 'pulse-pistol',
+    name: 'PULSE PISTOL',
+    baseType: 'Pistol',
+    slots: 1,
+    viralLoad: 8,
+    hungerDrain: 1,
+    description: 'Sidearm with a single Bio-Pod well. Light viral tax. Always hungry for a second shot.',
+  },
+  {
+    id: 'vein-smg',
+    name: 'VEIN SMG',
+    baseType: 'SMG',
+    slots: 2,
+    viralLoad: 14,
+    hungerDrain: 2,
+    description: 'High cyclic rate. Two pods let it overlay strain on every burst.',
+  },
+  {
+    id: 'rib-shotgun',
+    name: 'RIB SHOTGUN',
+    baseType: 'Shotgun',
+    slots: 2,
+    viralLoad: 18,
+    hungerDrain: 2,
+    description: 'Close-quarters meat cannon. Knockback scales with Tank genetic code.',
+  },
+  {
+    id: 'longbone-rifle',
+    name: 'LONGBONE RIFLE',
+    baseType: 'Rifle',
+    slots: 3,
+    viralLoad: 22,
+    hungerDrain: 2,
+    description: 'Precision living rifle. Third slot unlocks after the weapon feeds enough.',
+  },
+  {
+    id: 'spore-grenade',
+    name: 'SPORE GRENADE',
+    baseType: 'Grenade',
+    slots: 1,
+    viralLoad: 12,
+    hungerDrain: 3,
+    description: 'Thrown organ that detonates a cloud. Toxic cores turn the blast into a zone denial.',
+  },
+  {
+    id: 'hydra-rifle',
+    name: 'HYDRA RIFLE',
+    baseType: 'Rifle',
+    slots: 4,
+    viralLoad: 32,
+    hungerDrain: 3,
+    description: 'Experimental four-pod chassis. Triple-strain bonus is almost guaranteed — and so is the load.',
+  },
+]

@@ -20,7 +20,7 @@ export interface SaveState {
 
 export function createDefaultSave(playerName: string): SaveState {
   return {
-    version: '0.1.0',
+    version: '0.2.0',
     timestamp: Date.now(),
     player: {
       name: playerName.toUpperCase().trim() || 'SURVIVOR',

@@ -9,6 +9,17 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ---
 
+## [0.5.0] — 2026-08-19 — Phase 2: Data Layer
+
+### Added
+- **26 monster definitions** across Sprinter, Tank, Toxic, Camouflage, and Sentinel archetypes with Alpha–Omega strains, stats, capture rates, and genetic codes
+- **10 T-Evolution chains** (level, held item, strain exposure, breeding triggers)
+- **Weapon / armor / accessory catalogs** (living weapon bases, bio-armor slots, sentient accessories)
+- **Static Viral Dex overlay** — filterable specimen list, chain view, and gear browsers from the in-game survivor log
+- `npm run snapshot:phase2` — freeze the build to `docs/phase2/`
+
+---
+
 ## [0.4.0] — 2026-05-07 — Phase 1: Game Foundation
 
 ### Added

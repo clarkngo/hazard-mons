@@ -10,8 +10,8 @@ Each completed phase is preserved as a playable build at its own URL:
 
 | Phase | URL | Status |
 |---|---|---|
-| Phase 1 | `/hazard-mons/phase1/` | 🔲 Not started |
-| Phase 2 | `/hazard-mons/phase2/` | 🔲 Not started |
+| Phase 1 | `/hazard-mons/phase1/` | ✅ Complete |
+| Phase 2 | `/hazard-mons/phase2/` | ✅ Complete |
 | Phase 3 | `/hazard-mons/phase3/` | 🔲 Not started |
 | Phase 4 | `/hazard-mons/phase4/` | 🔲 Not started |
 | Phase 5 | `/hazard-mons/phase5/` | 🔲 Not started |
@@ -245,11 +245,11 @@ Exceeding the cap: max HP reduced, random debuffs. Forces focused builds.
 - [x] Title screen + new game / load game flow
 - [x] `docs/` folder structure + phase selector landing page (`docs/index.html`)
 
-### 🔲 Phase 2 — Data Layer
-- [ ] 20+ monster definitions (Viral Dex entries)
-- [ ] T-Evolution chains
-- [ ] Weapon / armor / accessory base definitions
-- [ ] Static Viral Dex UI panel
+### ✅ Phase 2 — Data Layer
+- [x] 20+ monster definitions (Viral Dex entries)
+- [x] T-Evolution chains
+- [x] Weapon / armor / accessory base definitions
+- [x] Static Viral Dex UI panel
 
 ### 🔲 Phase 3 — Battle System
 - [ ] Turn-based battle scene
