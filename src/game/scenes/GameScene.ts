@@ -1,9 +1,16 @@
 import Phaser from 'phaser'
 import { SaveSystem } from '../systems/SaveSystem'
 import type { SaveState } from '../types/save'
+import { MONSTERS } from '../data/monsters'
+import { EVOLUTION_CHAINS } from '../data/evolutions'
+import { WEAPONS } from '../data/weapons'
+import { ARMOR } from '../data/armor'
+import { ACCESSORIES } from '../data/accessories'
+import { ViralDexPanel } from '../ui/ViralDexPanel'
 
 export class GameScene extends Phaser.Scene {
   private ui: HTMLDivElement | null = null
+  private dex = new ViralDexPanel()
 
   constructor() {
     super({ key: 'GameScene' })
@@ -44,7 +51,7 @@ export class GameScene extends Phaser.Scene {
     return `
       <p class="game-eyebrow">// SURVIVOR LOG //</p>
       <h2 class="game-title">${state.player.name}</h2>
-      <p class="game-coming-soon">PHASE 2: DATA LAYER — COMING SOON</p>
+      <p class="game-coming-soon">PHASE 2: DATA LAYER — ${MONSTERS.length} SPECIMENS FILED</p>
 
       <div class="save-card">
         <p class="save-card-label">// BIOMETRIC STATUS //</p>
@@ -67,7 +74,28 @@ export class GameScene extends Phaser.Scene {
         </div>
       </div>
 
+      <div class="save-card">
+        <p class="save-card-label">// ARCHIVE INDEX //</p>
+        <div class="save-card-row">
+          <span class="save-card-key">VIRAL DEX</span>
+          <span class="save-card-val">${MONSTERS.length} entries</span>
+        </div>
+        <div class="save-card-row">
+          <span class="save-card-key">T-EVOLUTION</span>
+          <span class="save-card-val">${EVOLUTION_CHAINS.length} chains</span>
+        </div>
+        <div class="save-card-row">
+          <span class="save-card-key">WEAPONS</span>
+          <span class="save-card-val">${WEAPONS.length}</span>
+        </div>
+        <div class="save-card-row">
+          <span class="save-card-key">ARMOR / ACC</span>
+          <span class="save-card-val">${ARMOR.length} / ${ACCESSORIES.length}</span>
+        </div>
+      </div>
+
       <div class="game-actions">
+        <button class="menu-btn primary" id="btn-dex">▶ VIRAL DEX</button>
         <button class="menu-btn secondary" id="btn-back">← TITLE</button>
         <button class="menu-btn secondary" id="btn-export">↓ EXPORT SAVE</button>
       </div>
@@ -75,6 +103,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   private bindEvents(state: SaveState) {
+    this.ui!.querySelector('#btn-dex')!.addEventListener('click', () => {
+      this.dex.open()
+    })
+
     this.ui!.querySelector('#btn-back')!.addEventListener('click', () => {
       this.destroyUI()
       this.scene.start('TitleScene')
@@ -86,6 +118,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private destroyUI() {
+    this.dex.close()
     this.ui?.remove()
     this.ui = null
   }
