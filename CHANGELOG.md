@@ -7,8 +7,18 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+---
+
+## [0.6.0] — 2026-08-20 — Phase 3: Combat Loop
+
 ### Added
-- **Viral Dex pixel art** — 46 procedural 32×32 sprites (26 monsters, 6 weapons, 8 armor, 6 accessories) with strain-colored palettes, wired into Dex list/detail/gear cards (`npm run sprites`)
+- **Expanded save model** — party, storage, Viral Dex tiers, Bio-Pods, starter weapon, player level/XP (v0.3.0, migrates older saves)
+- **OverworldScene** — walkable hazard zone with grass encounter tiles (WASD/arrows)
+- **BattleScene** — turn-based Attack / Capture / Flee, Toxic viral contamination, XP rewards
+- **Party / Inventory panel** — view captures, Bio-Pods, starter weapon
+- **Viral Dex progress** — unfiled / spotted / encountered / captured reveal tiers
+- Battle and party UIs use existing Viral Dex pixel sprites
+- `npm run snapshot:phase3` — freeze build to `docs/phase3/`
 
 ---
 

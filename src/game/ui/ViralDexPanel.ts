@@ -6,6 +6,7 @@ import { ACCESSORIES } from '../data/accessories'
 import { spriteUrl } from '../data/sprites'
 import { formatTrigger } from '../types/catalog'
 import type { MonsterArchetype, MonsterDef, ViralStrain } from '../types/catalog'
+import type { DexTier, SaveState } from '../types/save'
 
 type Tab = 'dex' | 'chains' | 'weapons' | 'armor' | 'accessories'
 
@@ -19,9 +20,16 @@ export class ViralDexPanel {
   private strain: ViralStrain | 'ALL' = 'ALL'
   private selectedId: string = MONSTERS[0].id
   private onClose: (() => void) | null = null
+  private save: SaveState | null = null
 
-  open(onClose?: () => void) {
-    this.onClose = onClose ?? null
+  open(saveOrClose?: SaveState | (() => void), onClose?: () => void) {
+    if (typeof saveOrClose === 'function') {
+      this.save = null
+      this.onClose = saveOrClose
+    } else {
+      this.save = saveOrClose ?? null
+      this.onClose = onClose ?? null
+    }
     this.destroy()
     this.root = document.createElement('div')
     this.root.id = 'dex-overlay'
@@ -40,6 +48,10 @@ export class ViralDexPanel {
     this.root = null
   }
 
+  private tier(id: string): DexTier | null {
+    return this.save?.viralDex?.[id] ?? null
+  }
+
   private monsters(): MonsterDef[] {
     return MONSTERS.filter(m =>
       (this.archetype === 'ALL' || m.archetype === this.archetype) &&
@@ -54,12 +66,13 @@ export class ViralDexPanel {
       this.selectedId = list[0]?.id ?? MONSTERS[0].id
     }
     const selected = MONSTERS.find(m => m.id === this.selectedId) ?? MONSTERS[0]
+    const known = this.save ? Object.keys(this.save.viralDex).length : MONSTERS.length
 
     this.root.innerHTML = `
       <div class="dex-shell">
         <header class="dex-head">
           <div>
-            <p class="dex-eyebrow">// VIRAL DEX ARCHIVE — STATIC FILE //</p>
+            <p class="dex-eyebrow">// VIRAL DEX ARCHIVE ${this.save ? `— ${known}/${MONSTERS.length} FILED` : '— STATIC FILE'} //</p>
             <h2 class="dex-title">GENETIC CATALOG</h2>
           </div>
           <button class="menu-btn secondary dex-close" type="button" id="dex-close">✕ CLOSE</button>
@@ -120,10 +133,7 @@ export class ViralDexPanel {
   }
 
   private renderDex(list: MonsterDef[], selected: MonsterDef): string {
-    const chain = getChainFor(selected)
-    const next = selected.evolutionTrigger
-      ? formatTrigger(selected.evolutionTrigger)
-      : '—'
+    const selTier = this.tier(selected.id)
     return `
       <div class="dex-filters">
         <div class="dex-chip-row">${ARCHETYPES.map(a => this.chip('arch', a, this.archetype)).join('')}</div>
@@ -131,41 +141,81 @@ export class ViralDexPanel {
       </div>
       <div class="dex-split">
         <div class="dex-list">
-          ${list.length === 0 ? '<p class="dex-empty">NO MATCHING FILES</p>' : list.map(m => `
+          ${list.length === 0 ? '<p class="dex-empty">NO MATCHING FILES</p>' : list.map(m => {
+            const t = this.tier(m.id)
+            const unknown = this.save && !t
+            return `
             <button type="button" class="dex-item${m.id === selected.id ? ' on' : ''}" data-mon="${m.id}">
-              <img class="dex-thumb" src="${spriteUrl('monsters', m.id)}" alt="" width="32" height="32">
+              <img class="dex-thumb${unknown ? ' sil' : ''}" src="${spriteUrl('monsters', m.id)}" alt="" width="32" height="32">
               <span class="dex-item-text">
-                <span class="dex-item-name">${m.name}</span>
-                <span class="dex-item-meta">${m.archetype} · ${m.viralStrain}</span>
+                <span class="dex-item-name">${unknown ? '???' : m.name}</span>
+                <span class="dex-item-meta">${unknown ? 'UNFILED' : (t ? t.toUpperCase() : 'ARCHIVED')} · ${unknown ? '—' : m.archetype}</span>
               </span>
-            </button>
-          `).join('')}
+            </button>`
+          }).join('')}
         </div>
         <article class="dex-detail">
-          <p class="dex-file">FILE ${String(MONSTERS.indexOf(selected) + 1).padStart(2, '0')} / ${MONSTERS.length} · ARCHIVED</p>
-          <div class="dex-portrait-row">
-            <img class="dex-portrait" src="${spriteUrl('monsters', selected.id)}" alt="${selected.name}" width="128" height="128">
-            <div>
-              <h3>${selected.name}</h3>
-              <p class="dex-desc">${selected.description}</p>
-            </div>
-          </div>
-          <div class="dex-stats">
-            ${stat('HP', selected.stats.hp)}
-            ${stat('ATK', selected.stats.atk)}
-            ${stat('DEF', selected.stats.def)}
-            ${stat('SPD', selected.stats.spd)}
-            ${stat('CAPTURE', selected.captureRate)}
-          </div>
-          <p class="dex-kv"><span>ARCHETYPE</span><span>${selected.archetype}</span></p>
-          <p class="dex-kv"><span>STRAIN</span><span>${selected.viralStrain}</span></p>
-          <p class="dex-kv"><span>NEXT EVO</span><span>${next}</span></p>
-          <p class="dex-kv"><span>CHAIN</span><span>${chain.names.join(' → ')}</span></p>
-          <p class="dex-kv"><span>WEAPON MOD</span><span>${selected.geneticCode.weaponMod ?? '—'}</span></p>
-          <p class="dex-kv"><span>ARMOR MOD</span><span>${selected.geneticCode.armorMod ?? '—'}</span></p>
-          <p class="dex-kv"><span>ACCESSORY</span><span>${selected.geneticCode.accessoryMod ?? '—'}</span></p>
+          ${this.renderDetail(selected, selTier)}
         </article>
       </div>
+    `
+  }
+
+  private renderDetail(selected: MonsterDef, tier: DexTier | null): string {
+    const unknown = !!this.save && !tier
+    const spottedOnly = tier === 'spotted'
+    const encountered = tier === 'encountered' || tier === 'captured' || (!this.save)
+    const captured = tier === 'captured' || (!this.save)
+
+    if (unknown) {
+      return `
+        <p class="dex-file">FILE ${String(MONSTERS.indexOf(selected) + 1).padStart(2, '0')} / ${MONSTERS.length} · UNFILED</p>
+        <div class="dex-portrait-row">
+          <img class="dex-portrait sil" src="${spriteUrl('monsters', selected.id)}" alt="???" width="128" height="128">
+          <div>
+            <h3>???</h3>
+            <p class="dex-desc">No field data. Encounter this strain in the hazard zone.</p>
+          </div>
+        </div>
+      `
+    }
+
+    const chain = getChainFor(selected)
+    const next = selected.evolutionTrigger ? formatTrigger(selected.evolutionTrigger) : '—'
+    const name = spottedOnly ? selected.name : selected.name
+    const desc = spottedOnly
+      ? 'Specimen spotted. Approach to unlock biometric stats.'
+      : selected.description
+
+    return `
+      <p class="dex-file">FILE ${String(MONSTERS.indexOf(selected) + 1).padStart(2, '0')} / ${MONSTERS.length} · ${(tier ?? 'ARCHIVED').toString().toUpperCase()}</p>
+      <div class="dex-portrait-row">
+        <img class="dex-portrait" src="${spriteUrl('monsters', selected.id)}" alt="${name}" width="128" height="128">
+        <div>
+          <h3>${name}</h3>
+          <p class="dex-desc">${desc}</p>
+        </div>
+      </div>
+      ${encountered ? `
+        <div class="dex-stats">
+          ${stat('HP', selected.stats.hp)}
+          ${stat('ATK', selected.stats.atk)}
+          ${stat('DEF', selected.stats.def)}
+          ${stat('SPD', selected.stats.spd)}
+          ${stat('CAPTURE', selected.captureRate)}
+        </div>
+        <p class="dex-kv"><span>ARCHETYPE</span><span>${selected.archetype}</span></p>
+        <p class="dex-kv"><span>STRAIN</span><span>${selected.viralStrain}</span></p>
+        <p class="dex-kv"><span>NEXT EVO</span><span>${next}</span></p>
+        <p class="dex-kv"><span>CHAIN</span><span>${chain.names.join(' → ')}</span></p>
+      ` : `
+        <p class="dex-kv"><span>STATUS</span><span>SPOTTED</span></p>
+      `}
+      ${captured ? `
+        <p class="dex-kv"><span>WEAPON MOD</span><span>${selected.geneticCode.weaponMod ?? '—'}</span></p>
+        <p class="dex-kv"><span>ARMOR MOD</span><span>${selected.geneticCode.armorMod ?? '—'}</span></p>
+        <p class="dex-kv"><span>ACCESSORY</span><span>${selected.geneticCode.accessoryMod ?? '—'}</span></p>
+      ` : ''}
     `
   }
 
@@ -177,7 +227,7 @@ export class ViralDexPanel {
             <p class="dex-card-label">${c.ids.length}-STAGE T-EVOLUTION</p>
             <div class="dex-chain-sprites">
               ${c.ids.map(id => `
-                <img class="dex-thumb lg" src="${spriteUrl('monsters', id)}" alt="" width="48" height="48">
+                <img class="dex-thumb lg${this.save && !this.tier(id) ? ' sil' : ''}" src="${spriteUrl('monsters', id)}" alt="" width="48" height="48">
               `).join('<span class="dex-chain-arrow">→</span>')}
             </div>
             <h3>${c.names.join(' → ')}</h3>

@@ -12,7 +12,7 @@ Each completed phase is preserved as a playable build at its own URL:
 |---|---|---|
 | Phase 1 | `/hazard-mons/phase1/` | ✅ Complete |
 | Phase 2 | `/hazard-mons/phase2/` | ✅ Complete |
-| Phase 3 | `/hazard-mons/phase3/` | 🔲 Not started |
+| Phase 3 | `/hazard-mons/phase3/` | ✅ Complete |
 | Phase 4 | `/hazard-mons/phase4/` | 🔲 Not started |
 | Phase 5 | `/hazard-mons/phase5/` | 🔲 Not started |
 | Phase 6 | `/hazard-mons/phase6/` | 🔲 Not started |
@@ -251,11 +251,12 @@ Exceeding the cap: max HP reduced, random debuffs. Forces focused builds.
 - [x] Weapon / armor / accessory base definitions
 - [x] Static Viral Dex UI panel
 
-### 🔲 Phase 3 — Battle System
-- [ ] Turn-based battle scene
-- [ ] Capture mechanic (Bio-Pod throwing)
-- [ ] Genetic code extraction on capture/defeat
-- [ ] XP and leveling
+### ✅ Phase 3 — Battle System
+- [x] Turn-based battle scene
+- [x] Capture mechanic (Bio-Pod throwing)
+- [x] Genetic code extraction on capture/defeat
+- [x] XP and leveling
+- [x] Minimal encounter zone + party/inventory on save
 
 ### 🔲 Phase 4 — Weapon System
 - [ ] Bio-Pod slot UI
