@@ -1,29 +1,24 @@
 import Phaser from 'phaser'
 import { SaveSystem } from '../systems/SaveSystem'
 import type { SaveState } from '../types/save'
-import { MONSTERS } from '../data/monsters'
-import { EVOLUTION_CHAINS } from '../data/evolutions'
-import { WEAPONS } from '../data/weapons'
-import { ARMOR } from '../data/armor'
-import { ACCESSORIES } from '../data/accessories'
+import { xpToNextLevel } from '../types/save'
 import { ViralDexPanel } from '../ui/ViralDexPanel'
+import { PartyInventoryPanel } from '../ui/PartyInventoryPanel'
 
 export class GameScene extends Phaser.Scene {
   private ui: HTMLDivElement | null = null
   private dex = new ViralDexPanel()
+  private party = new PartyInventoryPanel()
 
   constructor() {
     super({ key: 'GameScene' })
   }
 
   create() {
-    // Draw a minimal dark bg so the Phaser canvas isn't blank
     const { width: W, height: H } = this.scale
     const gfx = this.add.graphics()
     gfx.fillStyle(0x030806, 1)
     gfx.fillRect(0, 0, W, H)
-
-    // Faint grid — keeps the aesthetic without the full node network
     gfx.lineStyle(0.5, 0x00ff41, 0.03)
     for (let x = 0; x < W; x += 56) gfx.lineBetween(x, 0, x, H)
     for (let y = 0; y < H; y += 56) gfx.lineBetween(0, y, W, y)
@@ -44,18 +39,19 @@ export class GameScene extends Phaser.Scene {
   }
 
   private buildHTML(state: SaveState): string {
-    const load  = state.player.viralLoad
-    const cap   = state.player.viralLoadCap
-    const pct   = Math.round((load / cap) * 100)
+    const load = state.player.viralLoad
+    const cap = state.player.viralLoadCap
+    const pct = Math.round((load / cap) * 100)
+    const next = xpToNextLevel(state.player.level)
+    const known = Object.keys(state.viralDex ?? {}).length
 
     return `
-      <p class="game-eyebrow">// SURVIVOR LOG //</p>
+      <p class="game-eyebrow">// OPS HUB — COMBAT LOOP ONLINE //</p>
       <h2 class="game-title">${state.player.name}</h2>
-      <p class="game-coming-soon">PHASE 2: DATA LAYER — ${MONSTERS.length} SPECIMENS FILED</p>
+      <p class="game-coming-soon">PHASE 3 · LV ${state.player.level} · XP ${state.player.xp}/${next}</p>
 
       <div class="save-card">
         <p class="save-card-label">// BIOMETRIC STATUS //</p>
-
         <div class="save-card-row">
           <span class="save-card-key">HP</span>
           <span class="save-card-val">${state.player.hp} / ${state.player.maxHp}</span>
@@ -63,6 +59,14 @@ export class GameScene extends Phaser.Scene {
         <div class="save-card-row">
           <span class="save-card-key">VIRAL LOAD</span>
           <span class="save-card-val" style="color:${pct >= 80 ? '#ff2240' : '#00ff41'}">${load} / ${cap}</span>
+        </div>
+        <div class="save-card-row">
+          <span class="save-card-key">BIO-PODS</span>
+          <span class="save-card-val">${state.inventory?.bioPods ?? 0}</span>
+        </div>
+        <div class="save-card-row">
+          <span class="save-card-key">PARTY</span>
+          <span class="save-card-val">${state.party?.length ?? 0} / 6 · DEX ${known}</span>
         </div>
         <div class="save-card-row">
           <span class="save-card-key">CHAPTER</span>
@@ -74,28 +78,10 @@ export class GameScene extends Phaser.Scene {
         </div>
       </div>
 
-      <div class="save-card">
-        <p class="save-card-label">// ARCHIVE INDEX //</p>
-        <div class="save-card-row">
-          <span class="save-card-key">VIRAL DEX</span>
-          <span class="save-card-val">${MONSTERS.length} entries</span>
-        </div>
-        <div class="save-card-row">
-          <span class="save-card-key">T-EVOLUTION</span>
-          <span class="save-card-val">${EVOLUTION_CHAINS.length} chains</span>
-        </div>
-        <div class="save-card-row">
-          <span class="save-card-key">WEAPONS</span>
-          <span class="save-card-val">${WEAPONS.length}</span>
-        </div>
-        <div class="save-card-row">
-          <span class="save-card-key">ARMOR / ACC</span>
-          <span class="save-card-val">${ARMOR.length} / ${ACCESSORIES.length}</span>
-        </div>
-      </div>
-
       <div class="game-actions">
-        <button class="menu-btn primary" id="btn-dex">▶ VIRAL DEX</button>
+        <button class="menu-btn primary" id="btn-zone">▶ ENTER ZONE</button>
+        <button class="menu-btn secondary" id="btn-dex">▶ VIRAL DEX</button>
+        <button class="menu-btn secondary" id="btn-party">▶ PARTY / INV</button>
         <button class="menu-btn secondary" id="btn-back">← TITLE</button>
         <button class="menu-btn secondary" id="btn-export">↓ EXPORT SAVE</button>
       </div>
@@ -103,8 +89,18 @@ export class GameScene extends Phaser.Scene {
   }
 
   private bindEvents(state: SaveState) {
+    this.ui!.querySelector('#btn-zone')!.addEventListener('click', () => {
+      this.destroyUI()
+      this.registry.set('saveState', state)
+      this.scene.start('OverworldScene')
+    })
+
     this.ui!.querySelector('#btn-dex')!.addEventListener('click', () => {
-      this.dex.open()
+      this.dex.open(state)
+    })
+
+    this.ui!.querySelector('#btn-party')!.addEventListener('click', () => {
+      this.party.open(state)
     })
 
     this.ui!.querySelector('#btn-back')!.addEventListener('click', () => {
@@ -119,6 +115,7 @@ export class GameScene extends Phaser.Scene {
 
   private destroyUI() {
     this.dex.close()
+    this.party.close()
     this.ui?.remove()
     this.ui = null
   }

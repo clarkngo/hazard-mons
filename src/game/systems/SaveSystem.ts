@@ -1,11 +1,12 @@
 import type { SaveState } from '../types/save'
+import { migrateSave, SAVE_VERSION } from '../types/save'
 
 const SAVE_KEY = 'hazardmons-save'
-const CURRENT_VERSION = '0.2.0'
 
 export const SaveSystem = {
   save(state: SaveState): void {
     state.timestamp = Date.now()
+    state.version = SAVE_VERSION
     localStorage.setItem(SAVE_KEY, JSON.stringify(state))
   },
 
@@ -13,7 +14,12 @@ export const SaveSystem = {
     const raw = localStorage.getItem(SAVE_KEY)
     if (!raw) return null
     try {
-      return JSON.parse(raw) as SaveState
+      const data = JSON.parse(raw) as Partial<SaveState>
+      if (!SaveSystem.validate(data)) return null
+      const migrated = migrateSave(data)
+      // Persist migration so next load is clean
+      if (data.version !== SAVE_VERSION) SaveSystem.save(migrated)
+      return migrated
     } catch {
       return null
     }
@@ -27,8 +33,7 @@ export const SaveSystem = {
     localStorage.removeItem(SAVE_KEY)
   },
 
-  // Validates that an imported save is structurally sound before accepting it
-  validate(data: unknown): data is SaveState {
+  validate(data: unknown): data is Partial<SaveState> {
     if (typeof data !== 'object' || data === null) return false
     const s = data as Record<string, unknown>
     return (
@@ -61,9 +66,7 @@ export const SaveSystem = {
             reject(new Error('Invalid save file format'))
             return
           }
-          // Stamp current version on import so old saves stay runnable
-          data.version = CURRENT_VERSION
-          resolve(data)
+          resolve(migrateSave(data))
         } catch {
           reject(new Error('Could not parse save file'))
         }

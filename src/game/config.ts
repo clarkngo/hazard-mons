@@ -2,6 +2,8 @@ import Phaser from 'phaser'
 import { BootScene } from './scenes/BootScene'
 import { TitleScene } from './scenes/TitleScene'
 import { GameScene } from './scenes/GameScene'
+import { OverworldScene } from './scenes/OverworldScene'
+import { BattleScene } from './scenes/BattleScene'
 
 export const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -13,5 +15,5 @@ export const gameConfig: Phaser.Types.Core.GameConfig = {
     width: window.innerWidth,
     height: window.innerHeight,
   },
-  scene: [BootScene, TitleScene, GameScene],
+  scene: [BootScene, TitleScene, GameScene, OverworldScene, BattleScene],
 }

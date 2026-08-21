@@ -152,7 +152,7 @@ export class TitleScene extends Phaser.Scene {
       <h1 class="title-main">
         <span class="tp">HAZARD</span><span class="th">MONS</span>
       </h1>
-      <p class="title-version">v0.2.0 — PHASE 2: DATA LAYER</p>
+      <p class="title-version">v0.3.0 — PHASE 3: COMBAT LOOP</p>
 
       <div class="title-menu">
         <button class="menu-btn primary" id="btn-new">▶ NEW GAME</button>
