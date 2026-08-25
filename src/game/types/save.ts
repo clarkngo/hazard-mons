@@ -114,6 +114,12 @@ export function xpToNextLevel(level: number): number {
   return 40 + level * 25
 }
 
+/** Stabilize at ops hub: full HP, bleed off viral load. */
+export function restAtHub(state: SaveState): void {
+  state.player.hp = state.player.maxHp
+  state.player.viralLoad = Math.max(0, Math.floor(state.player.viralLoad * 0.4))
+}
+
 export function applyPlayerXp(state: SaveState, amount: number): { leveled: boolean; levelsGained: number } {
   state.player.xp += amount
   let levelsGained = 0
