@@ -17,16 +17,18 @@ export interface BattleFighter {
 }
 
 export function createEnemyFighter(def: MonsterDef, playerLevel: number): BattleFighter {
-  const scale = 1 + Math.max(0, playerLevel - 1) * 0.08
-  const maxHp = Math.round(def.stats.hp * scale)
+  // Catalog stats are "true" values; wild fights use a softer curve so early
+  // encounters last a few turns instead of one-shotting a wounded survivor.
+  const scale = 1 + Math.max(0, playerLevel - 1) * 0.05
+  const maxHp = Math.max(18, Math.round(def.stats.hp * 0.62 * scale))
   return {
     monsterId: def.id,
     name: def.name,
     hp: maxHp,
     maxHp,
-    atk: Math.round(def.stats.atk * scale),
-    def: Math.round(def.stats.def * scale),
-    spd: Math.round(def.stats.spd * scale),
+    atk: Math.max(8, Math.round(def.stats.atk * 0.36 * scale)),
+    def: Math.max(4, Math.round(def.stats.def * 0.38 * scale)),
+    spd: Math.round(def.stats.spd * 0.7 * scale),
     captureRate: def.captureRate,
     archetype: def.archetype,
     viralStrain: def.viralStrain,
@@ -48,9 +50,11 @@ export function playerSpeed(state: SaveState): number {
   return 30 + state.player.level * 2
 }
 
-export function calcDamage(atk: number, def: number): number {
-  const raw = atk * (0.85 + Math.random() * 0.3) - def * 0.35
-  return Math.max(1, Math.round(raw))
+export function calcDamage(atk: number, def: number, maxHit?: number): number {
+  const raw = atk * (0.88 + Math.random() * 0.22) - def * 0.5
+  const dmg = Math.max(1, Math.round(raw))
+  if (maxHit && maxHit > 0) return Math.min(dmg, maxHit)
+  return dmg
 }
 
 /** captureRate 0–255 → probability, boosted when enemy is hurt */
@@ -60,9 +64,11 @@ export function captureChance(enemy: BattleFighter): number {
   return Math.min(0.92, base * 0.45 + hpFactor * 0.55)
 }
 
-export function fleeChance(playerSpd: number, enemySpd: number): number {
+export function fleeChance(playerSpd: number, enemySpd: number, hpRatio = 1): number {
   const ratio = playerSpd / Math.max(1, enemySpd)
-  return Math.min(0.9, 0.35 + ratio * 0.25)
+  let chance = 0.55 + ratio * 0.28
+  if (hpRatio < 0.45) chance += 0.2
+  return Math.min(0.95, chance)
 }
 
 export function xpReward(enemy: BattleFighter): number {

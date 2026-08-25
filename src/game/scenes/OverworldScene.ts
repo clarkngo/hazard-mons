@@ -6,7 +6,8 @@ import type { SaveState } from '../types/save'
 const TILE = 32
 const COLS = 20
 const ROWS = 14
-const ENCOUNTER_CHANCE = 0.12
+const ENCOUNTER_CHANCE = 0.08
+const POST_BATTLE_GRACE_MS = 1200
 
 // 0 floor, 1 wall, 2 grass
 const MAP: number[][] = (() => {
@@ -35,21 +36,46 @@ export class OverworldScene extends Phaser.Scene {
   private playerGfx!: Phaser.GameObjects.Rectangle
   private moving = false
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
-  private wasd!: { W: Phaser.Input.Keyboard.Key; A: Phaser.Input.Keyboard.Key; S: Phaser.Input.Keyboard.Key; D: Phaser.Input.Keyboard.Key }
+  private wasd!: {
+    W: Phaser.Input.Keyboard.Key
+    A: Phaser.Input.Keyboard.Key
+    S: Phaser.Input.Keyboard.Key
+    D: Phaser.Input.Keyboard.Key
+  }
   private ui: HTMLDivElement | null = null
   private mapOriginX = 0
   private mapOriginY = 0
   private encounterLock = false
+  private graceUntil = 0
+  private moveTimer?: Phaser.Time.TimerEvent
 
   constructor() {
     super({ key: 'OverworldScene' })
   }
 
   create() {
+    // Phaser reuses scene instances — reset locks from the previous visit
+    this.moving = false
+    this.encounterLock = false
+    this.moveTimer?.remove(false)
+    this.moveTimer = undefined
+    this.graceUntil = this.time.now + POST_BATTLE_GRACE_MS
+
+    document.getElementById('battle-ui')?.remove()
+    document.getElementById('overworld-ui')?.remove()
+    this.ui = null
+
     this.state = this.registry.get('saveState') as SaveState
     this.tileX = this.state.player.position?.x ?? 2
     this.tileY = this.state.player.position?.y ?? 2
     if (this.state.player.position?.map !== 'zone1') {
+      this.tileX = 2
+      this.tileY = 2
+    }
+    // Clamp in case of bad save coords
+    this.tileX = Phaser.Math.Clamp(this.tileX, 1, COLS - 2)
+    this.tileY = Phaser.Math.Clamp(this.tileY, 1, ROWS - 2)
+    if (MAP[this.tileY][this.tileX] === 1) {
       this.tileX = 2
       this.tileY = 2
     }
@@ -60,27 +86,40 @@ export class OverworldScene extends Phaser.Scene {
     this.syncPlayerPos()
 
     if (this.input.keyboard) {
+      this.input.keyboard.enabled = true
+      this.input.keyboard.removeAllListeners()
       this.cursors = this.input.keyboard.createCursorKeys()
       this.wasd = {
-        W: this.input.keyboard.addKey('W'),
-        A: this.input.keyboard.addKey('A'),
-        S: this.input.keyboard.addKey('S'),
-        D: this.input.keyboard.addKey('D'),
+        W: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
+        A: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
+        S: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
+        D: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
       }
-      this.input.keyboard.on('keydown-ESC', () => this.backToHub())
+      this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC).on('down', () => this.backToHub())
+      this.input.keyboard.resetKeys()
     }
 
+    this.game.canvas?.focus?.()
     this.mountHUD()
-    this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => this.destroyHUD())
+    this.events.off(Phaser.Scenes.Events.SHUTDOWN)
+    this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => this.onShutdown())
   }
 
   update() {
-    if (this.moving || this.encounterLock || !this.cursors) return
-    let dx = 0, dy = 0
-    if (this.cursors.left?.isDown || this.wasd.A.isDown) dx = -1
-    else if (this.cursors.right?.isDown || this.wasd.D.isDown) dx = 1
-    else if (this.cursors.up?.isDown || this.wasd.W.isDown) dy = -1
-    else if (this.cursors.down?.isDown || this.wasd.S.isDown) dy = 1
+    if (this.moving || this.encounterLock || !this.cursors || !this.wasd) return
+
+    let dx = 0
+    let dy = 0
+    if (Phaser.Input.Keyboard.JustDown(this.cursors.left) || Phaser.Input.Keyboard.JustDown(this.wasd.A)) dx = -1
+    else if (Phaser.Input.Keyboard.JustDown(this.cursors.right) || Phaser.Input.Keyboard.JustDown(this.wasd.D)) dx = 1
+    else if (Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.wasd.W)) dy = -1
+    else if (Phaser.Input.Keyboard.JustDown(this.cursors.down) || Phaser.Input.Keyboard.JustDown(this.wasd.S)) dy = 1
+    // Hold-to-walk after the first step
+    else if (this.cursors.left.isDown || this.wasd.A.isDown) dx = -1
+    else if (this.cursors.right.isDown || this.wasd.D.isDown) dx = 1
+    else if (this.cursors.up.isDown || this.wasd.W.isDown) dy = -1
+    else if (this.cursors.down.isDown || this.wasd.S.isDown) dy = 1
+
     if (dx || dy) this.tryMove(dx, dy)
   }
 
@@ -145,15 +184,22 @@ export class OverworldScene extends Phaser.Scene {
     SaveSystem.save(this.state)
     this.registry.set('saveState', this.state)
 
-    if (MAP[ny][nx] === 2 && Math.random() < ENCOUNTER_CHANCE) {
+    const inGrace = this.time.now < this.graceUntil
+    if (!inGrace && MAP[ny][nx] === 2 && Math.random() < ENCOUNTER_CHANCE) {
       this.triggerEncounter()
+      return
     }
 
-    this.time.delayedCall(140, () => { this.moving = false })
+    this.moveTimer?.remove(false)
+    this.moveTimer = this.time.delayedCall(140, () => {
+      this.moving = false
+    })
   }
 
   private triggerEncounter() {
     this.encounterLock = true
+    this.moving = true
+    this.moveTimer?.remove(false)
     const enemy = pickWildEncounter(this.state.player.level)
     this.registry.set('battleEnemyId', enemy.id)
     this.registry.set('saveState', this.state)
@@ -167,7 +213,6 @@ export class OverworldScene extends Phaser.Scene {
     this.ui.id = 'overworld-ui'
     uiRoot.appendChild(this.ui)
     this.refreshHUD()
-    this.ui.querySelector('#btn-hub')?.addEventListener('click', () => this.backToHub())
   }
 
   private refreshHUD() {
@@ -188,7 +233,14 @@ export class OverworldScene extends Phaser.Scene {
     this.ui = null
   }
 
+  private onShutdown() {
+    this.moveTimer?.remove(false)
+    this.moveTimer = undefined
+    this.destroyHUD()
+  }
+
   private backToHub() {
+    if (this.encounterLock) return
     SaveSystem.save(this.state)
     this.registry.set('saveState', this.state)
     this.destroyHUD()

@@ -1,7 +1,7 @@
 import Phaser from 'phaser'
 import { SaveSystem } from '../systems/SaveSystem'
 import type { SaveState } from '../types/save'
-import { xpToNextLevel } from '../types/save'
+import { restAtHub, xpToNextLevel } from '../types/save'
 import { ViralDexPanel } from '../ui/ViralDexPanel'
 import { PartyInventoryPanel } from '../ui/PartyInventoryPanel'
 
@@ -24,6 +24,9 @@ export class GameScene extends Phaser.Scene {
     for (let y = 0; y < H; y += 56) gfx.lineBetween(0, y, W, y)
 
     const state = this.registry.get('saveState') as SaveState
+    restAtHub(state)
+    SaveSystem.save(state)
+    this.registry.set('saveState', state)
     this.mountUI(state)
     this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => this.destroyUI())
   }
@@ -48,7 +51,7 @@ export class GameScene extends Phaser.Scene {
     return `
       <p class="game-eyebrow">// OPS HUB — COMBAT LOOP ONLINE //</p>
       <h2 class="game-title">${state.player.name}</h2>
-      <p class="game-coming-soon">PHASE 3 · LV ${state.player.level} · XP ${state.player.xp}/${next}</p>
+      <p class="game-coming-soon">PHASE 3 · LV ${state.player.level} · XP ${state.player.xp}/${next} · OPS STABILIZED</p>
 
       <div class="save-card">
         <p class="save-card-label">// BIOMETRIC STATUS //</p>

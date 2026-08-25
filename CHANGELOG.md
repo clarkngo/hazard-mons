@@ -7,6 +7,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+### Fixed
+- Combat death spiral: ops hub now fully restores HP and bleeds off viral load; knockdown no longer leaves you at 25% HP
+- Wild enemy ATK/DEF/HP softened; incoming hits capped so they cannot one-shot a wounded survivor
+- Flee is more reliable at low HP; field stim heals after a win; fewer grass encounters
+- Overworld movement lock after battle — Phaser reuses the scene instance, so `encounterLock` is now reset on every enter
+
 ---
 
 ## [0.6.0] — 2026-08-20 — Phase 3: Combat Loop

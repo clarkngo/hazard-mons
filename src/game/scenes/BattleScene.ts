@@ -156,7 +156,8 @@ export class BattleScene extends Phaser.Scene {
   private async doFlee() {
     if (this.busy || this.ended) return
     this.busy = true
-    const chance = fleeChance(playerSpeed(this.state), this.enemy.spd)
+    const hpRatio = this.state.player.hp / Math.max(1, this.state.player.maxHp)
+    const chance = fleeChance(playerSpeed(this.state), this.enemy.spd, hpRatio)
     if (Math.random() < chance) {
       this.push('Disengaged. Returning to zone…')
       SaveSystem.save(this.state)
@@ -172,12 +173,13 @@ export class BattleScene extends Phaser.Scene {
 
   private async enemyTurn() {
     await wait(280)
-    const dmg = calcDamage(this.enemy.atk, playerDefense(this.state))
+    const maxHit = Math.max(8, Math.floor(this.state.player.maxHp * 0.18))
+    const dmg = calcDamage(this.enemy.atk, playerDefense(this.state), maxHit)
     this.state.player.hp = Math.max(0, this.state.player.hp - dmg)
     this.push(`${this.enemy.name} hits for ${dmg}.`)
 
-    if (this.enemy.archetype === 'Toxic' && Math.random() < 0.45) {
-      const bump = 4 + Math.floor(Math.random() * 5)
+    if (this.enemy.archetype === 'Toxic' && Math.random() < 0.25) {
+      const bump = 2 + Math.floor(Math.random() * 3)
       this.state.player.viralLoad = Math.min(
         this.state.player.viralLoadCap,
         this.state.player.viralLoad + bump,
@@ -186,14 +188,13 @@ export class BattleScene extends Phaser.Scene {
     }
 
     if (this.state.player.hp <= 0) {
-      this.state.player.hp = Math.max(1, Math.floor(this.state.player.maxHp * 0.25))
-      this.state.player.viralLoad = Math.min(
-        this.state.player.viralLoadCap,
-        this.state.player.viralLoad + 8,
-      )
+      this.state.player.hp = this.state.player.maxHp
+      this.state.player.viralLoad = Math.max(0, Math.floor(this.state.player.viralLoad * 0.4))
+      if (this.state.inventory.bioPods < 3) this.state.inventory.bioPods = 3
+      this.state.player.position = { map: 'zone1', x: 2, y: 2 }
       SaveSystem.save(this.state)
       this.registry.set('saveState', this.state)
-      this.showEnd('DOWNED', 'You black out and crawl back to the hub. HP partially restored.', true)
+      this.showEnd('DOWNED', 'Medics haul you back to ops. HP restored. Rest before you deploy again.', true)
       return
     }
     SaveSystem.save(this.state)
@@ -205,12 +206,14 @@ export class BattleScene extends Phaser.Scene {
     const { leveled, levelsGained } = applyPlayerXp(this.state, xp)
     this.push(`+${xp} XP${leveled ? ` · LEVEL UP ×${levelsGained}` : ''}`)
     if (kind === 'defeat') {
-      // small bio-pod chance on kill
-      if (Math.random() < 0.2) {
+      if (Math.random() < 0.35) {
         this.state.inventory.bioPods += 1
         this.push('Salvaged +1 Bio-Pod from the remains.')
       }
     }
+    const stim = Math.round(this.state.player.maxHp * 0.4)
+    this.state.player.hp = Math.min(this.state.player.maxHp, this.state.player.hp + stim)
+    this.push(`Field stim +${stim} HP.`)
     SaveSystem.save(this.state)
     this.registry.set('saveState', this.state)
     this.showEnd(
@@ -237,6 +240,8 @@ export class BattleScene extends Phaser.Scene {
     `
     this.ui.querySelector('#btn-continue')!.addEventListener('click', () => {
       this.destroyUI()
+      // Hand focus back to the game so keyboard movement works immediately
+      this.game.canvas?.focus?.()
       if (toHub) this.scene.start('GameScene')
       else this.returnToZone()
     })
